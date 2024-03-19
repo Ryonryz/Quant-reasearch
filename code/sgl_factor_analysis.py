@@ -5,12 +5,12 @@ Created on Sat Apr  4 07:38:07 2020
 @author: 15012
 """
 import pandas as pd
+from utils import *
 
 dir_data_input = dir_data_final
 dir_data_output = dir_result
 
 total_df = pd.read_csv(dir_data_input + "total_df_monthly.csv")
-
 
 
 """
@@ -20,8 +20,9 @@ monthly rtn
 """
 
 
-total_df.head()
-total_df.columns
+# print(total_df.head())
+# print(total_df.columns)
+# print(total_df['monthly_rtn'])
 
 data_df = total_df
 rtn_name = "monthly_next_rtn"
@@ -64,6 +65,8 @@ def anal_rankICs(data_df,factor_name,rtn_name,date_name):
         cur_bool = cur_bool1 & cur_bool2
         if sum(cur_bool) > 0:
             cur_df = cur_df[cur_bool]
+            # print(cur_df[factor_name])
+            # print(cur_df[rtn_name])
             s1 = get_rank(cur_df[factor_name])
             s2 = get_rank(cur_df[rtn_name])
             ICs.append(np.corrcoef(s1,s2)[0,1])
@@ -83,11 +86,17 @@ anal_ICs(data_df,factor_name,rtn_name,date_name)
 
 """
 get_rank function
+"""
+def get_rank(x):
+    return x.rank()
 
+
+
+"""
 analyze each factor
 
 
 
 """
 
-anal_rankICs(data_df,factor_name,rtn_name,date_name)
+print(anal_rankICs(data_df,factor_name,rtn_name,date_name))
