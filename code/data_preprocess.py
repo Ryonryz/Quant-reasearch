@@ -33,10 +33,10 @@ month_list_stock_dict = {col: set(month_list_stock_df[col]) for col in month_lis
 year = 2006
 half_year = 1
 
-cur_data = pd.read_csv(dir_data_input + "ALL_A_%dHY%d.CSV" %(year,half_year),encoding = "GBK")        
+cur_data = pd.read_csv(dir_data_input + "ALL_A_%dHY%d.CSV" %(year,half_year),encoding = "GBK")
 cur_data.columns = ["stock_code","stock_name","date","open","high",\
                     "low","close","trading_volume","trading_amount","pct_chg",\
-                    "cir_mv","total_mv","cir_share","total_share","delete"]     
+                    "cir_mv","total_mv","cir_share","total_share","delete"]
 
 print(cur_data.shape)
 cur_data["month"] = cur_data.date.apply(lambda x: x[:7])
@@ -99,8 +99,8 @@ total_data.to_csv(dir_data_output + "trading_data_monthly.csv",index = False)
 
 """
 
-account data
-
+# account data
+import copy
 """
 dir_data_input = dir_data_raw_account
 dir_data_output = dir_data_output
@@ -113,7 +113,7 @@ file_names = copy.deepcopy(file_names_orig)
 
 def chg_delist_file_name(x):
     if x[0] == "~":
-        return None   
+        return None
     if len(x) > 12:
         if x[-12:-5] == "_delist":
             result = x[:-12]
@@ -128,7 +128,7 @@ file_names = [chg_delist_file_name(file_name) for file_name in file_names]
 file_names
 file_names = file_names[:-3]
 file_names
- 
+
 file_names = np.unique(file_names)
 
 
@@ -161,16 +161,16 @@ if file_name in file_names_orig:
     cur_file.index = cur_file.id
     del cur_file["id"]
     cur_file.head()
-    
+
     cur_factor_delist_df = cur_file.stack()
     cur_factor_delist_df.index
     cur_factor_delist_df = cur_factor_delist_df.reset_index()
     cur_factor_delist_df.head()
     cur_factor_delist_df = cur_factor_delist_df.rename(columns = {"level_1":"quarter",0:factor_name})
     cur_factor_delist_df["quarter"] = cur_factor_delist_df.quarter.apply(lambda x:x[-6:])
-    cur_factor_delist_df.head()    
+    cur_factor_delist_df.head()
     cur_factor_df = cur_factor_df.append(cur_factor_delist_df)
-    
+
 if len(total_factor_df) == 0:
     total_factor_df = cur_factor_df
 else:
@@ -204,16 +204,16 @@ if file_name in file_names_orig:
     cur_file.index = cur_file.id
     del cur_file["id"]
     cur_file.head()
-    
+
     cur_factor_delist_df = cur_file.stack()
     cur_factor_delist_df.index
     cur_factor_delist_df = cur_factor_delist_df.reset_index()
     cur_factor_delist_df.head()
     cur_factor_delist_df = cur_factor_delist_df.rename(columns = {"level_1":"quarter",0:factor_name})
     cur_factor_delist_df["quarter"] = cur_factor_delist_df.quarter.apply(lambda x:x[-6:])
-    cur_factor_delist_df.head()    
+    cur_factor_delist_df.head()
     cur_factor_df = cur_factor_df.append(cur_factor_delist_df)
-    
+
 if len(total_factor_df) == 0:
     total_factor_df = cur_factor_df
 else:
@@ -234,15 +234,15 @@ for file_name in file_names:
     del cur_file["name"]
     cur_file.index = cur_file.id
     del cur_file["id"]
-    
+
     cur_factor_df = cur_file.stack()
     cur_factor_df.index
     cur_factor_df = cur_factor_df.reset_index()
     cur_factor_df = cur_factor_df.rename(columns = {"level_1":"quarter",0:factor_name})
     cur_factor_df["quarter"] = cur_factor_df.quarter.apply(lambda x:x[-6:])
-    
+
     file_name = factor_name + "_delist.xlsx"
-    
+
     if file_name in file_names_orig:
         cur_file = pd.read_excel(dir_data_input + file_name)
         cur_file.head()
@@ -257,12 +257,12 @@ for file_name in file_names:
         cur_factor_delist_df = cur_factor_delist_df.rename(columns = {"level_1":"quarter",0:factor_name})
         cur_factor_delist_df["quarter"] = cur_factor_delist_df.quarter.apply(lambda x:x[-6:])
         cur_factor_df = cur_factor_df.append(cur_factor_delist_df)
-        
+
     if len(total_factor_df) == 0:
         total_factor_df = cur_factor_df
     else:
         total_factor_df = pd.merge(total_factor_df,cur_factor_df,how = "outer")
-    
+
     print(total_factor_df.columns)
 
 total_factor_df.columns
@@ -341,7 +341,6 @@ total_df = pd.merge(total_df,monthly_rtn,how = "left")
 total_df.columns
 total_df.to_csv(dir_data_output + "total_df_monthly.csv",index=False)
 
-total_df.head()
 
 """
 
@@ -350,6 +349,68 @@ total_df.head()
 2. dealing with abnormal value
 
 3. industry standardization
-
+"""
+# total_df = pd.read_csv(dir_data_output + 'total_df_monthly.csv')
+#
+# industry_df = pd.read_excel(dir_data_raw_market + 'industry.xlsx')
+# industry_df.index = industry_df.id
+# del industry_df['name']
+# del industry_df['id']
+#
+# industry_df = industry_df.stack()
+# industry_df = industry_df.reset_index()
+# industry_df = industry_df.rename(columns = {'id': 'stock_code', 'level_1': 'month', 0: 'industry'})
+#
+# industry_df['month'] = industry_df['month'].apply(lambda x:x[8:12] + '-' + x[13:15] )
+#
+# total_df = pd.merge(total_df, industry_df, how = 'left')
+#
+# fct_name = 'ratio_total_asset_growth'
+# tmp_df = total_df[[fct_name, 'month', 'industry']]
+#
+# tmp_df = tmp_df.groupby(['month', 'industry']).apply(lambda x: (x[fct_name].mean(), x[fct_name].std()))
+# tmp_df = tmp_df.reset_index()
+# tmp_df = tmp_df.rename(columns = {0: '%s_mean_std'%fct_name})
+# total_df = pd.merge(total_df, tmp_df, how = 'left')
+#
+# # total_df = total_df.fillna(int(0))
+# #
+# # print(total_df[fct_name])
+# # print(total_df['%s_mean_std'%fct_name][0])
+# # print(total_df['%s_mean_std'%fct_name][1])
+# # def get_standardization(x):
+# #     return (x[fct_name] - x['%s_mean_std'%fct_name][0])/x['%s_mean_std'%fct_name][1]
+#
+#
+#
+# total_df['%s_scaled'%fct_name] = total_df.apply(lambda x: (x[fct_name] - x['%s_mean_std'%fct_name][0])/x['%s_mean_std'%fct_name][1])
+#
+# fct_names = ['ratio_ROA', 'ratio_ROE']
+#
+# for fct_name in fct_names:
+#     tmp_df = total_df[[fct_name, 'month', 'industry']]
+#     tmp_df = tmp_df.groupby(['month', 'industry']).apply(lambda x: (x[fct_name].mean(), x[fct_name].std()))
+#     tmp_df = tmp_df.reset_index()
+#     tmp_df = tmp_df.rename(columns = {0: '%s_mean_std'%fct_name})
+#     total_df = pd.merge(total_df, tmp_df, how='left')
+#     total_df['%s_scaled'%fct_name] = total_df.apply(lambda x: (x[fct_name] - x['%s_mean_std'%fct_name][0])/x['%s_mean_std'%fct_name][1])
+"""
 4. next_rtn
 """
+
+
+total_df["monthly_next_rtn"] = total_df.groupby("stock_code").monthly_rtn.shift(-1)
+total_df.to_csv(dir_data_output + "total_df_monthly.csv",index=False)
+
+
+"""
+test
+"""
+
+print(total_df.head())
+print(total_df.columns)
+print(total_df['monthly_next_rtn'])
+# mean,std
+# single stock:
+# fct - mean / std
+# industry ,industry mean,industtry std
