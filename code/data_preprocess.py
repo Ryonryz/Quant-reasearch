@@ -12,7 +12,6 @@ import pandas as pd
 import os
 from utils import *
 
-
 """
 
 market data
@@ -280,7 +279,7 @@ total_factor_df.to_csv(dir_data_output + "account_data_quarterly.csv",index = Fa
 
 """
 
-merge trading date and account date daily
+# merge trading date and account date daily
 
 """
 
@@ -316,7 +315,7 @@ total_df.to_csv(dir_data_output + "total_df_monthly.csv",index=False)
 
 
 """
-get monthly rtn
+# get monthly rtn
 
 """
 
@@ -342,58 +341,59 @@ total_df.columns
 total_df.to_csv(dir_data_output + "total_df_monthly.csv",index=False)
 
 
-"""
 
+"""
 1. add more factor, total number of factors should be greater than 40, trading related factors should be more than 10
 
 2. dealing with abnormal value
+"""
 
+total_df = pd.read_csv(dir_data_output + 'total_df_monthly.csv')
+total_df.fillna(method='bfill',inplace=True)
+
+total_df.to_csv(dir_data_output + "total_df_monthly.csv",index=False)
+
+
+"""
 3. industry standardization
 """
-# total_df = pd.read_csv(dir_data_output + 'total_df_monthly.csv')
-#
-# industry_df = pd.read_excel(dir_data_raw_market + 'industry.xlsx')
-# industry_df.index = industry_df.id
-# del industry_df['name']
-# del industry_df['id']
-#
-# industry_df = industry_df.stack()
-# industry_df = industry_df.reset_index()
-# industry_df = industry_df.rename(columns = {'id': 'stock_code', 'level_1': 'month', 0: 'industry'})
-#
-# industry_df['month'] = industry_df['month'].apply(lambda x:x[8:12] + '-' + x[13:15] )
-#
-# total_df = pd.merge(total_df, industry_df, how = 'left')
-#
-# fct_name = 'ratio_total_asset_growth'
-# tmp_df = total_df[[fct_name, 'month', 'industry']]
-#
-# tmp_df = tmp_df.groupby(['month', 'industry']).apply(lambda x: (x[fct_name].mean(), x[fct_name].std()))
-# tmp_df = tmp_df.reset_index()
-# tmp_df = tmp_df.rename(columns = {0: '%s_mean_std'%fct_name})
-# total_df = pd.merge(total_df, tmp_df, how = 'left')
-#
-# # total_df = total_df.fillna(int(0))
-# #
-# # print(total_df[fct_name])
-# # print(total_df['%s_mean_std'%fct_name][0])
-# # print(total_df['%s_mean_std'%fct_name][1])
-# # def get_standardization(x):
-# #     return (x[fct_name] - x['%s_mean_std'%fct_name][0])/x['%s_mean_std'%fct_name][1]
-#
-#
-#
-# total_df['%s_scaled'%fct_name] = total_df.apply(lambda x: (x[fct_name] - x['%s_mean_std'%fct_name][0])/x['%s_mean_std'%fct_name][1])
-#
-# fct_names = ['ratio_ROA', 'ratio_ROE']
-#
-# for fct_name in fct_names:
-#     tmp_df = total_df[[fct_name, 'month', 'industry']]
-#     tmp_df = tmp_df.groupby(['month', 'industry']).apply(lambda x: (x[fct_name].mean(), x[fct_name].std()))
-#     tmp_df = tmp_df.reset_index()
-#     tmp_df = tmp_df.rename(columns = {0: '%s_mean_std'%fct_name})
-#     total_df = pd.merge(total_df, tmp_df, how='left')
-#     total_df['%s_scaled'%fct_name] = total_df.apply(lambda x: (x[fct_name] - x['%s_mean_std'%fct_name][0])/x['%s_mean_std'%fct_name][1])
+
+total_df = pd.read_csv(dir_data_output + 'total_df_monthly.csv')
+industry_df = pd.read_excel(dir_data_raw_market + 'industry.xlsx')
+industry_df.index = industry_df.id
+del industry_df['name']
+del industry_df['id']
+
+industry_df = industry_df.stack()
+industry_df = industry_df.reset_index()
+industry_df = industry_df.rename(columns = {'id': 'stock_code', 'level_1': 'month', 0: 'industry'})
+
+industry_df['month'] = industry_df['month'].apply(lambda x:x[8:12] + '-' + x[13:15] )
+
+total_df = pd.merge(total_df, industry_df, how = 'left')
+
+fct_name = 'ratio_total_asset_growth'
+tmp_df = total_df[[fct_name, 'month', 'industry']]
+
+tmp_df = tmp_df.groupby(['month', 'industry']).apply(lambda x: (x[fct_name].mean(), x[fct_name].std()))
+tmp_df = tmp_df.reset_index()
+tmp_df = tmp_df.rename(columns = {0: '%s_mean_std'%fct_name})
+total_df = pd.merge(total_df, tmp_df, how = 'left')
+
+
+print(total_df['%s_mean_std'%fct_name])
+
+total_df['%s_scaled'%fct_name] = total_df.apply(lambda x: (x[fct_name] - x['%s_mean_std'%fct_name][0])/x['%s_mean_std'%fct_name][1],axis=1)
+
+fct_names = ['ratio_ROA', 'ratio_ROE']
+
+for fct_name in fct_names:
+    tmp_df = total_df[[fct_name, 'month', 'industry']]
+    tmp_df = tmp_df.groupby(['month', 'industry']).apply(lambda x: (x[fct_name].mean(), x[fct_name].std()))
+    tmp_df = tmp_df.reset_index()
+    tmp_df = tmp_df.rename(columns = {0: '%s_mean_std'%fct_name})
+    total_df = pd.merge(total_df, tmp_df, how='left')
+    total_df['%s_scaled'%fct_name] = total_df.apply(lambda x: (x[fct_name] - x['%s_mean_std'%fct_name][0])/x['%s_mean_std'%fct_name][1],axis=1)
 """
 4. next_rtn
 """
